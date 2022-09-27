@@ -32,7 +32,7 @@ from sklearn.neighbors import kneighbors_graph
 import tensorflow as tf
 
 
-def construct_knn_graph(data, k = 15, symmetrize = True):
+def construct_knn_graph(data, k=15, symmetrize=True):
   graph = kneighbors_graph(data, k)
   if symmetrize:
     graph = graph + graph.T

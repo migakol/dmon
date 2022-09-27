@@ -22,10 +22,11 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import normalized_mutual_info_score
 import tensorflow.compat.v2 as tf
 
-from graph_embedding.dmon.layers.gcn import GCN
-from graph_embedding.dmon.models.dgi import deep_graph_infomax
-from graph_embedding.dmon.synthetic_data.graph_util import construct_knn_graph
-from graph_embedding.dmon.synthetic_data.overlapping_gaussians import overlapping_gaussians
+from layers.gcn import GCN
+from models.dgi import deep_graph_infomax
+from utilities.graph  import construct_knn_graph
+from synthetic_data.overlapping_gaussians import circular_gaussians
+from synthetic_data.overlapping_gaussians import line_gaussians
 
 tf.compat.v1.enable_v2_behavior()
 
@@ -41,7 +42,7 @@ flags.DEFINE_integer(
 flags.DEFINE_float(
     'train_size', 0.2, 'Training data proportion.', lower_bound=0)
 flags.DEFINE_integer(
-    'n_epochs', 200, 'Number of epochs to train.', lower_bound=0)
+    'n_epochs', 1000, 'Number of epochs to train.', lower_bound=0)
 flags.DEFINE_float(
     'learning_rate', 0.01, 'Optimizer\'s learning rate.', lower_bound=0)
 
@@ -53,7 +54,9 @@ def main(argv):
   n_nodes = FLAGS.n_nodes
   n_clusters = FLAGS.n_clusters
   train_size = FLAGS.train_size
-  data_clean, data_dirty, labels = overlapping_gaussians(n_nodes, n_clusters)
+  # michkol
+  # data_clean, data_dirty, labels = overlapping_gaussians(n_nodes, n_clusters)
+  data_clean, data_dirty, labels = line_gaussians(n_nodes, n_clusters)
   graph_clean = construct_knn_graph(data_clean).todense().A1.reshape(
       n_nodes, n_nodes)
 
