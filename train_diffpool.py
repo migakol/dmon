@@ -22,9 +22,9 @@ import numpy as np
 from sklearn.metrics import normalized_mutual_info_score
 import tensorflow.compat.v2 as tf
 
-from graph_embedding.dmon.models.gcn_diffpool import gcn_diffpool
-from graph_embedding.dmon.synthetic_data.graph_util import construct_knn_graph
-from graph_embedding.dmon.synthetic_data.overlapping_gaussians import overlapping_gaussians
+from models.gcn_diffpool import gcn_diffpool
+from utilities.graph  import construct_knn_graph
+from synthetic_data.overlapping_gaussians import line_gaussians
 
 tf.compat.v1.enable_v2_behavior()
 
@@ -52,7 +52,7 @@ def main(argv):
   n_nodes = FLAGS.n_nodes
   n_clusters = FLAGS.n_clusters
   train_size = FLAGS.train_size
-  data_clean, data_dirty, labels = overlapping_gaussians(n_nodes, n_clusters)
+  data_clean, data_dirty, labels = line_gaussians(n_nodes, n_clusters)
   graph_clean = construct_knn_graph(data_clean).todense().A1.reshape(
       n_nodes, n_nodes)
 
