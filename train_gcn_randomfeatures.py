@@ -22,8 +22,8 @@ from sklearn.metrics import normalized_mutual_info_score
 import tensorflow.compat.v2 as tf
 
 from models.multilayer_gcn import multilayer_gcn
-from synthetic_data.graph_util import construct_knn_graph
-from synthetic_data.overlapping_gaussians import overlapping_gaussians
+from utilities.graph  import construct_knn_graph
+from synthetic_data.overlapping_gaussians import line_gaussians
 
 tf.compat.v1.enable_v2_behavior()
 
@@ -54,7 +54,9 @@ def main(argv):
   n_clusters = FLAGS.n_clusters
   n_random_features = FLAGS.n_random_features
   train_size = FLAGS.train_size
-  data_clean, data_dirty, labels = overlapping_gaussians(n_nodes, n_clusters)
+  # michkol
+  # data_clean, data_dirty, labels = overlapping_gaussians(n_nodes, n_clusters)
+  data_clean, data_dirty, labels = line_gaussians(n_nodes, n_clusters)
   data_random = np.random.normal(size=(n_nodes, n_random_features))
   graph_clean = construct_knn_graph(data_clean).todense().A1.reshape(
       n_nodes, n_nodes)

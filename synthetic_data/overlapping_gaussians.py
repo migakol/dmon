@@ -47,6 +47,8 @@ def circular_gaussians(n_points, n_clusters=8):  # pylint: disable=missing-funct
   sigma = 0.45 * avg_points_per_cluster
   cluster_sizes = np.random.normal(
       avg_points_per_cluster, sigma, size=n_clusters).astype(np.int)
+  # michkol
+  cluster_sizes[np.where(cluster_sizes < 2)] = 2
   labels = np.hstack([
       cluster_idx * np.ones(cluster_size, dtype=np.int)
       for cluster_idx, cluster_size in enumerate(cluster_sizes)

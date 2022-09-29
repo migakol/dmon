@@ -69,7 +69,7 @@ class GCN(Layer):  # TODO(tsitsulin): add docstring pylint: disable=missing-clas
       output = tf.matmul(features, self.kernel)
     # michkol
     # output = output * self.skip_weight + tf.sparse.sparse_dense_matmul(graph, output)
-
+    #
     output = output * self.skip_weight + tf.linalg.matmul(graph, output)
     output = output + self.bias
     return self.activation(output)

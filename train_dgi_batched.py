@@ -24,7 +24,7 @@ import tensorflow.compat.v2 as tf
 
 from layers.gcn import GCN
 from models.dgi import deep_graph_infomax
-from synthetic_data.graph_util import construct_knn_graph
+from utilities.graph  import construct_knn_graph
 from synthetic_data.overlapping_gaussians import line_gaussians
 from utilities.batching import make_batch
 from utilities.batching import random_batch
