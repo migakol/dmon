@@ -21,6 +21,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import normalized_mutual_info_score
 import tensorflow.compat.v2 as tf
+import metrics
+
+import scipy.sparse
 
 from layers.gcn import GCN
 from models.dgi import deep_graph_infomax
@@ -34,6 +37,10 @@ tf.compat.v1.enable_v2_behavior()
 
 FLAGS = flags.FLAGS
 
+flags.DEFINE_string(
+    'graph_path',
+    None,
+    'Input graph path.')
 flags.DEFINE_integer(
     'n_nodes', 1000, 'Number of nodes for the synthetic graph.', lower_bound=0)
 flags.DEFINE_integer(
@@ -49,6 +56,39 @@ flags.DEFINE_integer(
     'n_epochs', 200, 'Number of epochs to train.', lower_bound=0)
 flags.DEFINE_float(
     'learning_rate', 0.01, 'Optimizer\'s learning rate.', lower_bound=0)
+
+def load_npz(
+    filename
+):
+  """Loads an attributed graph with sparse features from a specified Numpy file.
+
+  Args:
+    filename: A valid file name of a numpy file containing the input data.
+
+  Returns:
+    A tuple (graph, features, labels, label_indices) with the sparse adjacency
+    matrix of a graph, sparse feature matrix, dense label array, and dense label
+    index array (indices of nodes that have the labels in the label array).
+  """
+  with np.load(open(filename, 'rb'), allow_pickle=True) as loader:
+    loader = dict(loader)
+    adjacency = scipy.sparse.csr_matrix(
+        (loader['adj_data'], loader['adj_indices'], loader['adj_indptr']),
+        shape=loader['adj_shape'])
+
+    features = scipy.sparse.csr_matrix(
+        (loader['feature_data'], loader['feature_indices'],
+         loader['feature_indptr']),
+        shape=loader['feature_shape'])
+
+    label_indices = loader['label_indices']
+    labels = loader['labels']
+  assert adjacency.shape[0] == features.shape[
+      0], 'Adjacency and feature size must be equal!'
+  assert labels.shape[0] == label_indices.shape[
+      0], 'Labels and label_indices size must be equal!'
+  return adjacency, features, labels, label_indices
+
 
 
 def main(argv):
@@ -133,6 +173,10 @@ def main(argv):
       normalized_mutual_info_score(
           labels[test_mask], clusters, average_method='arithmetic'))
   print('Accuracy:', 100 * accuracy_score(labels[test_mask], clusters))
+
+  adjacency, features, labels, label_indices = load_npz(FLAGS.graph_path)
+  print('Conductance:', metrics.conductance(adjacency, clusters))
+  print('Modularity:', metrics.modularity(adjacency, clusters))
 
 
 if __name__ == '__main__':

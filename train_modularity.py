@@ -92,8 +92,11 @@ def main(argv):
       'NMI:',
       normalized_mutual_info_score(
           labels, clusters, average_method='arithmetic'))
-  print('Precision:', precision(labels, clusters))
-  print('Recall:', recall(labels, clusters))
+  prec = precision(labels, clusters)
+  rec = recall(labels, clusters)
+  print('Precision:', prec)
+  print('Recall:', rec)
+  print('F1:', 2 * prec * rec / (prec + rec))
   print('Cluster sizes for %d clusters:' % (len(set(clusters))))
   print(collections.Counter(clusters))
 
