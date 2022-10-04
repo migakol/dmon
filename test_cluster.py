@@ -16,6 +16,12 @@ from layers.mincut import MincutPooling
 from layers.modularity import ModularityPooling
 from layers.bilinear import Bilinear
 
+# visualization
+import sys
+sys.path.append('/opt/homebrew/Cellar/graph-tool/2.45_2/lib/python3.10/site-packages')
+sys.path.append('/opt/homebrew/Cellar/gtk+/2.24.33/lib/gtk-2.0')
+import graph_tool.all as gt
+
 import matplotlib.pyplot as plt
 
 tf.compat.v1.enable_v2_behavior()
@@ -271,5 +277,68 @@ def main(argv):
         clusters = clf.predict(representations[label_indices, :][test_mask[label_indices], :])
         compute_and_print_metrics_dgi(labels, label_indices, clusters, test_mask, adjacency)
 
+def visualization_test():
+    # Visualization part
+
+    # First visualize the graph without clustering
+    adjacency, features, labels, label_indices = load_npz('/Users/michaelko/Code/dmon/data/cora.npz')
+    g = gt.Graph()
+    num_nodes = features.shape[0]
+    g.add_vertex(num_nodes)
+
+    for row in range(num_nodes):
+        cols = adjacency.indices[adjacency.indptr[row]:adjacency.indptr[row+1]]
+        for col in cols:
+            if col > row:
+                g.add_edge(g.vertex(row), g.vertex(col))
+
+    plot_color = g.new_vertex_property('vector<double>')
+    g.vertex_properties['plot_color'] = plot_color
+
+    cluster_map = {0: (1, 0, 0, 1), 1: (0, 0, 1, 1), 2: (0, 1, 0, 1), 3: (0, 1, 1, 1), 4: (1, 0, 1, 1), 5: (1, 1, 0, 1),
+                   6: (0.3, 0.5, 0.7, 1)}
+
+    for ind, cluster in zip(label_indices, labels):
+        plot_color[ind] = cluster_map[cluster]
+
+    gt.graph_draw(g, vertex_text=g.vertex_index, vertex_fill_color=g.vertex_properties['plot_color'],
+                  output="/Users/michaelko/Downloads/draw4.pdf")
+
+    # Normalised RGB color.
+    # 0->Red, 1->Blue
+    # red_blue_map = {0: (1, 0, 0, 1), 1: (0, 0, 1, 1)}
+    # # Create new vertex property
+    # plot_color = g.new_vertex_property('vector<double>')
+    # # add that property to graph
+    # g.vertex_properties['plot_color'] = plot_color
+    # # assign a value to that property for each node of that graph
+    # for v in g.vertices():
+    #     plot_color[v] = red_blue_map[g.vertex_properties['value'][v]]
+    #
+    # gt.graph_draw(g,
+    #               vertex_fill_color=g.vertex_properties['plot_color'])
+
+    # import graph_tool
+    # pos = gt.fruchterman_reingold_layout(g, n_iter=1000)
+    # pos = gt.sfdp_layout(g)
+    # pos = gt.planar_layout(g)
+    # pos = gt.radial_tree_layout(g, g.vertex(10))
+
+    # g = gt.collection.data["netscience"]
+    # g = gt.GraphView(g, vfilt=gt.label_largest_component(g))
+    # state = gt.minimize_nested_blockmodel_dl(g)
+    # t = gt.get_hierarchy_tree(state)[0]
+    # tpos = pos = gt.radial_tree_layout(t, t.vertex(t.num_vertices() - 1, use_index=False), weighted=True)
+    # cts = gt.get_hierarchy_control_points(g, t, tpos)
+    # pos = g.own_property(tpos)
+
+    # state = gt.minimize_nested_blockmodel_dl(g)
+
+    # pos = gt.arf_layout(g, max_iter=0)
+    # gt.graph_draw(g, pos=pos, vertex_text=g.vertex_index, output="/Users/michaelko/Downloads/draw3.pdf")
+    # graph_tool.draw.arf_layout(g, output="/Users/michaelko/Downloads/draw3.pdf")
+    pass
+
 if __name__ == '__main__':
-  app.run(main)
+    visualization_test()
+    # app.run(main)
