@@ -39,7 +39,7 @@ def add_pt_to_stack1(initial_stack, used_points, proc_points, cluster, pt_id, cu
     return initial_stack, used_points, proc_points, cluster
 
 def fill_initial_stack1(random_points, cur_random_cnt, used_points, point_hash, proc_points, pairs, cur_cluster,
-                       dist_array, threshold):
+                       dist_array, threshold, method):
     # At this stage, we have the initial point
     # Fill initial stack
     init_point = random_points[cur_random_cnt]
@@ -54,14 +54,31 @@ def fill_initial_stack1(random_points, cur_random_cnt, used_points, point_hash, 
         # Check both members of the pair
         proc_points[pairs[pt][0]] = cur_cluster
         proc_points[pairs[pt][1]] = cur_cluster
-        if dist_array[pt] < threshold:
-            continue
+
         if used_points[pairs[pt][0]] == 0:
-            initial_stack, used_points, proc_points, cluster = add_pt_to_stack1(initial_stack, used_points, proc_points,
-                                                                               cluster, pairs[pt][0], cur_cluster)
+            distance = distance_pt_to_cluster1(pairs[pt][0], cluster, dist_array, point_hash, pairs, method)
+
+            if distance > threshold:
+                initial_stack, used_points, proc_points, cluster = add_pt_to_stack1(initial_stack, used_points,
+                                                                               proc_points, cluster, pairs[pt][0],
+                                                                               cur_cluster)
+
         if used_points[pairs[pt][1]] == 0:
-            initial_stack, used_points, proc_points, cluster = add_pt_to_stack1(initial_stack, used_points, proc_points,
-                                                                               cluster, pairs[pt][1], cur_cluster)
+            distance = distance_pt_to_cluster1(pairs[pt][1], cluster, dist_array, point_hash, pairs, method)
+
+            if distance > threshold:
+                initial_stack, used_points, proc_points, cluster = add_pt_to_stack1(initial_stack, used_points,
+                                                                               proc_points, cluster, pairs[pt][1],
+                                                                               cur_cluster)
+
+        # if dist_array[pt] < threshold:
+        #     continue
+        # if used_points[pairs[pt][0]] == 0:
+        #     initial_stack, used_points, proc_points, cluster = add_pt_to_stack1(initial_stack, used_points, proc_points,
+        #                                                                        cluster, pairs[pt][0], cur_cluster)
+        # if used_points[pairs[pt][1]] == 0:
+        #     initial_stack, used_points, proc_points, cluster = add_pt_to_stack1(initial_stack, used_points, proc_points,
+        #                                                                        cluster, pairs[pt][1], cur_cluster)
 
     return used_points, proc_points, initial_stack, cluster
 
@@ -83,11 +100,13 @@ def distance_pt_to_cluster1(pt_id, cluster, dist_array, point_hash, pairs, metho
     distances = [dist_dict[x] for x in inter]
 
     if method == 'min':
+        if len(inter) != len(cluster):
+            return 0
         return min(distances)
     elif method == 'max':
         return max(distances)
     else:
-        return sum(distances) / len(distances)
+        return sum(distances) / len(cluster)
 
 
 def segmentation_internal_loop1(proc_points, used_points, initial_stack, point_hash, pairs, cur_cluster, dist_array,
@@ -98,8 +117,10 @@ def segmentation_internal_loop1(proc_points, used_points, initial_stack, point_h
         for pt in point_hash[cur_proc_pt]:
             if proc_points[pairs[pt][0]] < cur_cluster:
                 pt_to_test = pairs[pt][0]
+                proc_points[pairs[pt][0]] = cur_cluster
             elif proc_points[pairs[pt][1]] < cur_cluster:
                 pt_to_test = pairs[pt][1]
+                proc_points[pairs[pt][1]] = cur_cluster
             else:
                 continue
             if used_points[pt_to_test] != 0:
