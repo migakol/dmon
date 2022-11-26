@@ -1,9 +1,11 @@
+import os.path
+
 import numpy as np
 import pickle
 import random
 import copy
 import time
-from update_distance import update_distances, preprocess_data, distance_pt_to_cluster1, segmentation_internal_loop1
+from update_distance import update_distances, preprocess_data, segmentation_internal_loop1, fill_initial_stack1
 
 def preprocess_data1(pairs, num_points):
     """
@@ -300,6 +302,8 @@ def choose_free_pt(cur_random_cnt, num_points, used_points, random_points):
             break
         else:
             cur_random_cnt = cur_random_cnt + 1
+            if cur_random_cnt >= num_points:
+                return -1
 
     return cur_random_cnt
 
@@ -314,7 +318,7 @@ def add_pt_to_stack(initial_stack, used_points, proc_points, cluster, pt_id, cur
 
 
 def fill_initial_stack(random_points, cur_random_cnt, used_points, point_hash, proc_points, pairs, cur_cluster,
-                       dist_array, threshold):
+                       dist_array, threshold, method):
     # At this stage, we have the initial point
     # Fill initial stack
     init_point = random_points[cur_random_cnt]
@@ -329,14 +333,31 @@ def fill_initial_stack(random_points, cur_random_cnt, used_points, point_hash, p
         # Check both members of the pair
         proc_points[pairs[pt][0]] = cur_cluster
         proc_points[pairs[pt][1]] = cur_cluster
-        if dist_array[pt] < threshold:
-            continue
+
         if used_points[pairs[pt][0]] == 0:
-            initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points, proc_points,
-                                                                               cluster, pairs[pt][0], cur_cluster)
+            distance = distance_pt_to_cluster(pairs[pt][0], cluster, dist_array, point_hash, pairs, method)
+
+            if distance > threshold:
+                initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points,
+                                                                               proc_points, cluster, pairs[pt][0],
+                                                                               cur_cluster)
+
         if used_points[pairs[pt][1]] == 0:
-            initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points, proc_points,
-                                                                               cluster, pairs[pt][1], cur_cluster)
+            distance = distance_pt_to_cluster(pairs[pt][1], cluster, dist_array, point_hash, pairs, method)
+
+            if distance > threshold:
+                initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points,
+                                                                               proc_points, cluster, pairs[pt][1],
+                                                                               cur_cluster)
+
+        # if dist_array[pt] < threshold:
+        #     continue
+        # if used_points[pairs[pt][0]] == 0:
+        #     initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points, proc_points,
+        #                                                                        cluster, pairs[pt][0], cur_cluster)
+        # if used_points[pairs[pt][1]] == 0:
+        #     initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points, proc_points,
+        #                                                                        cluster, pairs[pt][1], cur_cluster)
 
     return used_points, proc_points, initial_stack, cluster
 
@@ -358,6 +379,8 @@ def distance_pt_to_cluster(pt_id, cluster, dist_array, point_hash, pairs, method
     distances = [dist_dict[x] for x in inter]
 
     if method == 'min':
+        if len(inter) != len(cluster):
+            return 0
         return min(distances)
     elif method == 'max':
         return max(distances)
@@ -373,14 +396,16 @@ def segmentation_internal_loop(proc_points, used_points, initial_stack, point_ha
         for pt in point_hash[cur_proc_pt]:
             if proc_points[pairs[pt][0]] < cur_cluster:
                 pt_to_test = pairs[pt][0]
+                proc_points[pairs[pt][0]] = cur_cluster
             elif proc_points[pairs[pt][1]] < cur_cluster:
                 pt_to_test = pairs[pt][1]
+                proc_points[pairs[pt][1]] = cur_cluster
             else:
                 continue
             if used_points[pt_to_test] != 0:
                 continue
             # Compute the distance between pt_to_test to the cluster
-            distance = distance_pt_to_cluster1(pt_to_test, cluster, dist_array, point_hash, pairs, method)
+            distance = distance_pt_to_cluster(pt_to_test, cluster, dist_array, point_hash, pairs, method)
 
             if distance > threshold:
                 initial_stack, used_points, proc_points, cluster = add_pt_to_stack(initial_stack, used_points,
@@ -415,11 +440,21 @@ def create_clusters(pairs, point_hash, dist_array, method, threshold):
             break
 
         # Fill inital stack
-        used_points, proc_points, initial_stack, cluster = fill_initial_stack(random_points, cur_random_cnt,
-                                    used_points, point_hash, proc_points, pairs, cur_cluster, dist_array, threshold)
+        # used_points, proc_points, initial_stack, cluster = fill_initial_stack(random_points, cur_random_cnt,
+        #                     used_points, point_hash, proc_points, pairs, cur_cluster, dist_array, threshold, method)
+
+        used_points, proc_points, initial_stack, cluster = fill_initial_stack1(random_points, cur_random_cnt,
+                                                                          used_points, point_hash, proc_points, pairs,
+                                                                          cur_cluster, dist_array, threshold, method)
 
         initial_stack, used_points, proc_points, cluster = segmentation_internal_loop1(proc_points, used_points,
                         initial_stack, point_hash, pairs, cur_cluster, dist_array, cluster, method, threshold)
+
+        # initial_stack, used_points, proc_points, cluster = segmentation_internal_loop(proc_points, used_points,
+        #                                                                            initial_stack, point_hash, pairs,
+        #                                                                            cur_cluster, dist_array, cluster,
+        #                                                                            method, threshold)
+
         # while len(initial_stack) > 0:
         #     cur_proc_pt = initial_stack.pop()
         #     # Go over the neighborhood of cur_proc_pt
@@ -451,27 +486,201 @@ def create_clusters(pairs, point_hash, dist_array, method, threshold):
 
     return all_clusters
 
+def preprocess_data21(pairs, num_points):
+    """
+    For every point, save all its pairs
+    """
+
+    point_hash = [[] for k in range(num_points)]
+    for k, pair in enumerate(pairs):
+        point_hash[pair[0]].append(k)
+        point_hash[pair[1]].append(k)
+
 def segmentation():
-    file = open('/Users/michaelko/Code/dmon/data/pairs_dist.pkl', 'rb')
+    # With max 0.4 use the 0.2 dataset (pair_dist)
+    # With min, better use smaller values and partial dataset
+    # Try average and 0.2
+
+    # pair_file = '/Users/michaelko/Code/dmon/data/pairs_partial_2.pkl'
+    # dist_file = '/Users/michaelko/Code/dmon/data/distance_partial_2.pkl'
+    dist_file = '/Users/michaelko/Code/dmon/data/pairs_dist.pkl'
+    pair_file = '/Users/michaelko/Code/dmon/data/res_pairs.pkl'
+
+
+    file = open(dist_file, 'rb' )
     dist_array = pickle.load(file)
     file.close()
-    file = open('/Users/michaelko/Code/dmon/data/res_pairs.pkl', 'rb')
+    file = open(pair_file, 'rb')
     pairs = pickle.load(file)
     file.close()
 
-    threshold = 0.5
-    threshold_str = '05'
+    threshold = 0.3
+    threshold_str = '03'
     random.seed(10)
     num_points = 269796
+    # num_points = 53959
 
     point_hash = preprocess_data(pairs, num_points)
 
-    all_clusters = create_clusters(pairs, point_hash, dist_array, 'min', threshold)
+    # threshold = 0.4
+    # threshold_str = '04'
+    # all_clusters = create_clusters(pairs, point_hash, dist_array, 'max', threshold)
+    # min - choose the longest distance. Works with smaller values
+    all_clusters = create_clusters(pairs, point_hash, dist_array, 'average', threshold)
 
-    file = open('/Users/michaelko/Code/dmon/data/clusters_' + threshold_str + '.pkl', 'wb')
+
+
+    # file = open('/Users/michaelko/Code/dmon/data/clusters_max_' + threshold_str + '.pkl', 'wb')
+    file = open('/Users/michaelko/Code/dmon/data/clusters_avg_' + threshold_str + '.pkl', 'wb')
     pickle.dump(all_clusters, file)
+
+
+def segmentation_big_file():
+    base_folder = '/Users/michaelko/Code/dmon/data/'
+    numbers = np.linspace(10000, 260000, 26, dtype=int)
+    names = [f'res_pairs_{number}.pkl' for number in numbers]
+    names.append('res_pairs_end.pkl')
+
+    data_percentage = 0.2
+    num_signatures = 269796
+    used_points = int(data_percentage * num_signatures)
+
+    permutated_points = np.random.permutation(num_signatures)
+    points_dict = {}
+    for k in range(used_points):
+        points_dict[permutated_points[k]] = k
+
+
+    underscore1 = names[0].find('_')
+    underscore2 = names[0][underscore1 + 1:].find('_')
+    dot = names[0].find('.')
+
+    # Open all the files and create the big data
+    final_pairs = []
+    final_dist = []
+    for name in names:
+        print(name)
+        start = time.time()
+        file = open(os.path.join(base_folder, name), 'rb')
+        pairs = pickle.load(file)
+        file.close()
+        file = open(os.path.join(base_folder, 'dist' + name[3:]), 'rb')
+        dist_array = pickle.load(file)
+        file.close()
+
+        new_pairs = []
+        new_dist = []
+        for k, pair in enumerate(pairs):
+            if pair[0] in permutated_points[0:used_points] and pair[1] in permutated_points[0:used_points]:
+                new_pairs.append((points_dict[pair[0]], points_dict[pair[1]]))
+                new_dist.append(dist_array[k].astype(np.float16))
+
+        final_pairs = final_pairs + new_pairs
+        final_dist = final_dist + new_dist
+
+        # convert dist_array to float 16
+        end = time.time()
+        print(end - start)
+
+    drive_folder = '/Volumes/T7/Autobrains/'
+    pair_file = 'pairs_partial_2.pkl'
+    dist_file = 'distance_partial_2.pkl'
+    file = open(os.path.join(base_folder, pair_file), 'wb')
+    pickle.dump(final_pairs, file)
+    file.close()
+    file = open(os.path.join(base_folder, dist_file), 'wb')
+    pickle.dump(final_dist, file)
+    file.close()
+
+
+def prepare_distances():
+    base_folder = '/Users/michaelko/Code/dmon/data/'
+    numbers = np.linspace(10000, 260000, 26, dtype=int)
+    names = [f'res_pairs_{number}.pkl' for number in numbers]
+    names.append('res_pairs_end.pkl')
+
+    underscore1 = names[0].find('_')
+    underscore2 = names[0][underscore1 + 1:].find('_')
+    dot = names[0].find('.')
+
+    # Open all the files and create the big data
+    final_dist = []
+    for name in names:
+        print(name)
+        start = time.time()
+        file = open(os.path.join(base_folder, 'dist' + name[3:]), 'rb')
+        dist_array = pickle.load(file)
+        file.close()
+        # convert dist_array to float 16
+        dist_array = [d.astype(np.float16) for d in dist_array]
+        final_dist = final_dist + dist_array
+        end = time.time()
+        print(end - start)
+
+    dist_file = 'distance.pkl'
+    file = open(os.path.join(base_folder, dist_file), 'wb')
+    pickle.dump(final_dist, file)
+    file.close()
+
+def prepare_pairs():
+    base_folder = '/Users/michaelko/Code/dmon/data'
+    numbers = np.linspace(10000, 260000, 26, dtype=int)
+    names = [f'res_pairs_{number}.pkl' for number in numbers]
+    names.append('res_pairs_end.pkl')
+
+    underscore1 = names[0].find('_')
+    underscore2 = names[0][underscore1 + 1:].find('_')
+    dot = names[0].find('.')
+
+    # Open all the files and create the big data
+    final_pairs = []
+    final_dist = []
+    for name in names:
+        print(name)
+        start = time.time()
+        file = open(os.path.join(base_folder, name), 'rb')
+        pairs = pickle.load(file)
+        file.close()
+        final_pairs = final_pairs + pairs
+        end = time.time()
+        print(end - start)
+
+    pair_file = 'pairs_full.pkl'
+    file = open(os.path.join(base_folder, pair_file), 'wb')
+    pickle.dump(final_pairs, file)
+    file.close()
+
+
+def get_clusters_and_signatures(signatures_file, clusters_file):
+    with open(signatures_file, 'rb') as file:
+        signatures = pickle.load(file)
+
+    # Go over all possible clusters
+    with open(clusters_file, 'rb') as file:
+        clusters = pickle.load(file)
+
+    return signatures, clusters
+
+def auto_clustering_pipeline():
+    # Input definition and input loading
+    signatures_file = '/Users/michaelko/Code/dmon/data/random_signatures.pkl'
+    clusters_files = ['/Users/michaelko/Code/dmon/data/clusters_max_04.pkl']
+
+    # Go over all possible clusters
+    for clusters_file in clusters_files:
+        signatures, clusters = get_clusters_and_signatures(signatures_file, clusters_file)
+
+    # C
+    # Step 1 - compute the prior probability of a bit to be on
+    all_bins = compute_bits_per_cluster(signatures, clusters, 0)
+    for cluster in range(1, 239):
+        all_bins = all_bins + compute_bits_per_cluster(signatures, clusters, cluster)
+
 
 if __name__ == "__main__":
     print('Clustering')
     # hierarchical_test()
     segmentation()
+    # segmentation_big_file()
+    # prepare_pairs()
+    # prepare_distances()
