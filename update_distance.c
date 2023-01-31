@@ -1448,6 +1448,8 @@ static const char __pyx_k_sum[] = "sum";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_name[] = "__name__";
 static const char __pyx_k_pair[] = "pair";
+static const char __pyx_k_set1[] = "set1";
+static const char __pyx_k_set2[] = "set2";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_inter[] = "inter";
 static const char __pyx_k_pair1[] = "pair1";
@@ -1490,6 +1492,7 @@ static const char __pyx_k_fill_initial_stack1[] = "fill_initial_stack1";
 static const char __pyx_k_update_distance_pyx[] = "update_distance.pyx";
 static const char __pyx_k_chosen_pair_cluster1[] = "chosen_pair_cluster1";
 static const char __pyx_k_chosen_pair_cluster2[] = "chosen_pair_cluster2";
+static const char __pyx_k_common_bits_distance[] = "common_bits_distance";
 static const char __pyx_k_old_2_new_cluster_map[] = "old_2_new_cluster_map";
 static const char __pyx_k_new_cluster_dist_array[] = "new_cluster_dist_array";
 static const char __pyx_k_distance_pt_to_cluster1[] = "distance_pt_to_cluster1";
@@ -1502,6 +1505,7 @@ static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_cluster;
 static PyObject *__pyx_n_s_cluster_dist_array;
 static PyObject *__pyx_n_s_cluster_pairs;
+static PyObject *__pyx_n_s_common_bits_distance;
 static PyObject *__pyx_n_s_cur_cluster;
 static PyObject *__pyx_n_s_cur_proc_pt;
 static PyObject *__pyx_n_s_cur_random_cnt;
@@ -1542,6 +1546,8 @@ static PyObject *__pyx_n_s_pt_to_test;
 static PyObject *__pyx_n_s_random_points;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_segmentation_internal_loop1;
+static PyObject *__pyx_n_s_set1;
+static PyObject *__pyx_n_s_set2;
 static PyObject *__pyx_n_s_sum;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_threshold;
@@ -1556,6 +1562,7 @@ static PyObject *__pyx_pf_15update_distance_4add_pt_to_stack1(CYTHON_UNUSED PyOb
 static PyObject *__pyx_pf_15update_distance_6fill_initial_stack1(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_random_points, PyObject *__pyx_v_cur_random_cnt, PyObject *__pyx_v_used_points, PyObject *__pyx_v_point_hash, PyObject *__pyx_v_proc_points, PyObject *__pyx_v_pairs, PyObject *__pyx_v_cur_cluster, PyObject *__pyx_v_dist_array, PyObject *__pyx_v_threshold, PyObject *__pyx_v_method); /* proto */
 static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_pt_id, PyObject *__pyx_v_cluster, PyObject *__pyx_v_dist_array, PyObject *__pyx_v_point_hash, PyObject *__pyx_v_pairs, PyObject *__pyx_v_method); /* proto */
 static PyObject *__pyx_pf_15update_distance_10segmentation_internal_loop1(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_proc_points, PyObject *__pyx_v_used_points, PyObject *__pyx_v_initial_stack, PyObject *__pyx_v_point_hash, PyObject *__pyx_v_pairs, PyObject *__pyx_v_cur_cluster, PyObject *__pyx_v_dist_array, PyObject *__pyx_v_cluster, PyObject *__pyx_v_method, PyObject *__pyx_v_threshold); /* proto */
+static PyObject *__pyx_pf_15update_distance_12common_bits_distance(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_set1, PyObject *__pyx_v_set2); /* proto */
 static __Pyx_CachedCFunction __pyx_umethod_PyList_Type_pop = {0, &__pyx_n_s_pop, 0, 0, 0};
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
@@ -1565,12 +1572,14 @@ static PyObject *__pyx_tuple__5;
 static PyObject *__pyx_tuple__7;
 static PyObject *__pyx_tuple__9;
 static PyObject *__pyx_tuple__11;
+static PyObject *__pyx_tuple__13;
 static PyObject *__pyx_codeobj__2;
 static PyObject *__pyx_codeobj__4;
 static PyObject *__pyx_codeobj__6;
 static PyObject *__pyx_codeobj__8;
 static PyObject *__pyx_codeobj__10;
 static PyObject *__pyx_codeobj__12;
+static PyObject *__pyx_codeobj__14;
 /* Late includes */
 
 /* "update_distance.pyx":1
@@ -3655,7 +3664,7 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
  *     for pt in point_hash[pt_id]:
  *         if pairs[pt][0] == pt_id:             # <<<<<<<<<<<<<<
  *             neighbors.append(pairs[pt][1])
- *             dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]
+ *             dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]
  */
     __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_pairs, __pyx_v_pt); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
@@ -3672,7 +3681,7 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
  *     for pt in point_hash[pt_id]:
  *         if pairs[pt][0] == pt_id:
  *             neighbors.append(pairs[pt][1])             # <<<<<<<<<<<<<<
- *             dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]
+ *             dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]
  *         else:
  */
       __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_pairs, __pyx_v_pt); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 92, __pyx_L1_error)
@@ -3686,18 +3695,12 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
       /* "update_distance.pyx":93
  *         if pairs[pt][0] == pt_id:
  *             neighbors.append(pairs[pt][1])
- *             dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]             # <<<<<<<<<<<<<<
+ *             dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]             # <<<<<<<<<<<<<<
  *         else:
  *             neighbors.append(pairs[pt][0])
  */
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_pairs, __pyx_v_pt); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 93, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_dist_array, __pyx_v_pt); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 93, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_dist_array, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 93, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_pairs, __pyx_v_pt); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_t_8 = __Pyx_GetItemInt(__pyx_t_1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 93, __pyx_L1_error)
@@ -3712,16 +3715,16 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
  *     for pt in point_hash[pt_id]:
  *         if pairs[pt][0] == pt_id:             # <<<<<<<<<<<<<<
  *             neighbors.append(pairs[pt][1])
- *             dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]
+ *             dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]
  */
       goto __pyx_L5;
     }
 
     /* "update_distance.pyx":95
- *             dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]
+ *             dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]
  *         else:
  *             neighbors.append(pairs[pt][0])             # <<<<<<<<<<<<<<
- *             dist_dict[pairs[pt][0]] = dist_array[pairs[pt][0]]
+ *             dist_dict[pairs[pt][0]] = dist_array[pt] # dist_array[pairs[pt][0]]
  * 
  */
     /*else*/ {
@@ -3736,18 +3739,12 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
       /* "update_distance.pyx":96
  *         else:
  *             neighbors.append(pairs[pt][0])
- *             dist_dict[pairs[pt][0]] = dist_array[pairs[pt][0]]             # <<<<<<<<<<<<<<
+ *             dist_dict[pairs[pt][0]] = dist_array[pt] # dist_array[pairs[pt][0]]             # <<<<<<<<<<<<<<
  * 
  *     # Go over the cluster
  */
-      __pyx_t_8 = __Pyx_PyObject_GetItem(__pyx_v_pairs, __pyx_v_pt); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 96, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_GetItem(__pyx_v_dist_array, __pyx_v_pt); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 96, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      __pyx_t_5 = __Pyx_GetItemInt(__pyx_t_8, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 96, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __pyx_t_8 = __Pyx_PyObject_GetItem(__pyx_v_dist_array, __pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 96, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_8);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_pairs, __pyx_v_pt); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 96, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 96, __pyx_L1_error)
@@ -3939,7 +3936,7 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
  *     elif method == 'max':
  *         return max(distances)             # <<<<<<<<<<<<<<
  *     else:
- *         return sum(distances) / len(distances)
+ *         return sum(distances) / len(cluster)
  */
     __Pyx_XDECREF(__pyx_r);
     __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_v_distances); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
@@ -3960,7 +3957,7 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
   /* "update_distance.pyx":109
  *         return max(distances)
  *     else:
- *         return sum(distances) / len(distances)             # <<<<<<<<<<<<<<
+ *         return sum(distances) / len(cluster)             # <<<<<<<<<<<<<<
  * 
  * 
  */
@@ -3968,7 +3965,7 @@ static PyObject *__pyx_pf_15update_distance_8distance_pt_to_cluster1(CYTHON_UNUS
     __Pyx_XDECREF(__pyx_r);
     __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_builtin_sum, __pyx_v_distances); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 109, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_9 = PyList_GET_SIZE(__pyx_v_distances); if (unlikely(__pyx_t_9 == ((Py_ssize_t)-1))) __PYX_ERR(0, 109, __pyx_L1_error)
+    __pyx_t_9 = PyObject_Length(__pyx_v_cluster); if (unlikely(__pyx_t_9 == ((Py_ssize_t)-1))) __PYX_ERR(0, 109, __pyx_L1_error)
     __pyx_t_1 = PyInt_FromSsize_t(__pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 109, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_8 = __Pyx_PyNumber_Divide(__pyx_t_2, __pyx_t_1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 109, __pyx_L1_error)
@@ -4697,6 +4694,8 @@ static PyObject *__pyx_pf_15update_distance_10segmentation_internal_loop1(CYTHON
  *                                                                                    cur_cluster)
  * 
  *     return initial_stack, used_points, proc_points, cluster             # <<<<<<<<<<<<<<
+ * 
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_4 = PyTuple_New(4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 136, __pyx_L1_error)
@@ -4745,6 +4744,153 @@ static PyObject *__pyx_pf_15update_distance_10segmentation_internal_loop1(CYTHON
   __Pyx_XDECREF(__pyx_v_used_points);
   __Pyx_XDECREF(__pyx_v_initial_stack);
   __Pyx_XDECREF(__pyx_v_cluster);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "update_distance.pyx":139
+ * 
+ * 
+ * def common_bits_distance(set1, set2):             # <<<<<<<<<<<<<<
+ *     """
+ *     Common bits between two signatures (represented as sets)
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_15update_distance_13common_bits_distance(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_15update_distance_12common_bits_distance[] = "\n    Common bits between two signatures (represented as sets)\n    ";
+static PyMethodDef __pyx_mdef_15update_distance_13common_bits_distance = {"common_bits_distance", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_15update_distance_13common_bits_distance, METH_VARARGS|METH_KEYWORDS, __pyx_doc_15update_distance_12common_bits_distance};
+static PyObject *__pyx_pw_15update_distance_13common_bits_distance(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyObject *__pyx_v_set1 = 0;
+  PyObject *__pyx_v_set2 = 0;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("common_bits_distance (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_set1,&__pyx_n_s_set2,0};
+    PyObject* values[2] = {0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_set1)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_set2)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("common_bits_distance", 1, 2, 2, 1); __PYX_ERR(0, 139, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "common_bits_distance") < 0)) __PYX_ERR(0, 139, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+    }
+    __pyx_v_set1 = values[0];
+    __pyx_v_set2 = values[1];
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("common_bits_distance", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 139, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("update_distance.common_bits_distance", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_15update_distance_12common_bits_distance(__pyx_self, __pyx_v_set1, __pyx_v_set2);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_15update_distance_12common_bits_distance(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_set1, PyObject *__pyx_v_set2) {
+  Py_ssize_t __pyx_v_intersection;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  Py_ssize_t __pyx_t_4;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("common_bits_distance", 0);
+
+  /* "update_distance.pyx":143
+ *     Common bits between two signatures (represented as sets)
+ *     """
+ *     intersection = len(set1.intersection(set2))             # <<<<<<<<<<<<<<
+ *     return float(intersection)
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_set1, __pyx_n_s_intersection); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_3)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_3);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_v_set2) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_set2);
+  __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_4 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 143, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_intersection = __pyx_t_4;
+
+  /* "update_distance.pyx":144
+ *     """
+ *     intersection = len(set1.intersection(set2))
+ *     return float(intersection)             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = PyFloat_FromDouble(((double)__pyx_v_intersection)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 144, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "update_distance.pyx":139
+ * 
+ * 
+ * def common_bits_distance(set1, set2):             # <<<<<<<<<<<<<<
+ *     """
+ *     Common bits between two signatures (represented as sets)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_AddTraceback("update_distance.common_bits_distance", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -4804,6 +4950,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cluster, __pyx_k_cluster, sizeof(__pyx_k_cluster), 0, 0, 1, 1},
   {&__pyx_n_s_cluster_dist_array, __pyx_k_cluster_dist_array, sizeof(__pyx_k_cluster_dist_array), 0, 0, 1, 1},
   {&__pyx_n_s_cluster_pairs, __pyx_k_cluster_pairs, sizeof(__pyx_k_cluster_pairs), 0, 0, 1, 1},
+  {&__pyx_n_s_common_bits_distance, __pyx_k_common_bits_distance, sizeof(__pyx_k_common_bits_distance), 0, 0, 1, 1},
   {&__pyx_n_s_cur_cluster, __pyx_k_cur_cluster, sizeof(__pyx_k_cur_cluster), 0, 0, 1, 1},
   {&__pyx_n_s_cur_proc_pt, __pyx_k_cur_proc_pt, sizeof(__pyx_k_cur_proc_pt), 0, 0, 1, 1},
   {&__pyx_n_s_cur_random_cnt, __pyx_k_cur_random_cnt, sizeof(__pyx_k_cur_random_cnt), 0, 0, 1, 1},
@@ -4844,6 +4991,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_random_points, __pyx_k_random_points, sizeof(__pyx_k_random_points), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_segmentation_internal_loop1, __pyx_k_segmentation_internal_loop1, sizeof(__pyx_k_segmentation_internal_loop1), 0, 0, 1, 1},
+  {&__pyx_n_s_set1, __pyx_k_set1, sizeof(__pyx_k_set1), 0, 0, 1, 1},
+  {&__pyx_n_s_set2, __pyx_k_set2, sizeof(__pyx_k_set2), 0, 0, 1, 1},
   {&__pyx_n_s_sum, __pyx_k_sum, sizeof(__pyx_k_sum), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_threshold, __pyx_k_threshold, sizeof(__pyx_k_threshold), 0, 0, 1, 1},
@@ -4938,6 +5087,18 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
   __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(10, 0, 14, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_update_distance_pyx, __pyx_n_s_segmentation_internal_loop1, 112, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 112, __pyx_L1_error)
+
+  /* "update_distance.pyx":139
+ * 
+ * 
+ * def common_bits_distance(set1, set2):             # <<<<<<<<<<<<<<
+ *     """
+ *     Common bits between two signatures (represented as sets)
+ */
+  __pyx_tuple__13 = PyTuple_Pack(3, __pyx_n_s_set1, __pyx_n_s_set2, __pyx_n_s_intersection); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 139, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__13);
+  __Pyx_GIVEREF(__pyx_tuple__13);
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_update_distance_pyx, __pyx_n_s_common_bits_distance, 139, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 139, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -5287,6 +5448,18 @@ if (!__Pyx_RefNanny) {
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_15update_distance_11segmentation_internal_loop1, NULL, __pyx_n_s_update_distance); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 112, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_segmentation_internal_loop1, __pyx_t_1) < 0) __PYX_ERR(0, 112, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "update_distance.pyx":139
+ * 
+ * 
+ * def common_bits_distance(set1, set2):             # <<<<<<<<<<<<<<
+ *     """
+ *     Common bits between two signatures (represented as sets)
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_15update_distance_13common_bits_distance, NULL, __pyx_n_s_update_distance); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 139, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_common_bits_distance, __pyx_t_1) < 0) __PYX_ERR(0, 139, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "update_distance.pyx":1

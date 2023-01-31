@@ -90,10 +90,10 @@ def distance_pt_to_cluster1(pt_id, cluster, dist_array, point_hash, pairs, metho
     for pt in point_hash[pt_id]:
         if pairs[pt][0] == pt_id:
             neighbors.append(pairs[pt][1])
-            dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]
+            dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]
         else:
             neighbors.append(pairs[pt][0])
-            dist_dict[pairs[pt][0]] = dist_array[pairs[pt][0]]
+            dist_dict[pairs[pt][0]] = dist_array[pt] # dist_array[pairs[pt][0]]
 
     # Go over the cluster
     inter = set(cluster).intersection(neighbors)
@@ -134,3 +134,11 @@ def segmentation_internal_loop1(proc_points, used_points, initial_stack, point_h
                                                                                    cur_cluster)
 
     return initial_stack, used_points, proc_points, cluster
+
+
+def common_bits_distance(set1, set2):
+    """
+    Common bits between two signatures (represented as sets)
+    """
+    intersection = len(set1.intersection(set2))
+    return float(intersection)

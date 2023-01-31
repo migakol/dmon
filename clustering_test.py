@@ -7,6 +7,10 @@ import copy
 import time
 from update_distance import update_distances, preprocess_data, segmentation_internal_loop1, fill_initial_stack1
 
+small_signatures_file = '/Users/michaelko/Code/dmon/data/random_signatures_20.pkl'
+sig_file = open(small_signatures_file, 'rb')
+mega_signatures = pickle.load(sig_file)
+
 def preprocess_data1(pairs, num_points):
     """
     For every point, save all its pairs
@@ -314,6 +318,9 @@ def add_pt_to_stack(initial_stack, used_points, proc_points, cluster, pt_id, cur
     proc_points[pt_id] = cur_cluster
     cluster.append(pt_id)
 
+    #if len(mega_signatures[pt_id][3]) < 150:
+    #    print(pt_id)
+
     return initial_stack, used_points, proc_points, cluster
 
 
@@ -369,10 +376,10 @@ def distance_pt_to_cluster(pt_id, cluster, dist_array, point_hash, pairs, method
     for pt in point_hash[pt_id]:
         if pairs[pt][0] == pt_id:
             neighbors.append(pairs[pt][1])
-            dist_dict[pairs[pt][1]] = dist_array[pairs[pt][1]]
+            dist_dict[pairs[pt][1]] = dist_array[pt] # dist_array[pairs[pt][1]]
         else:
             neighbors.append(pairs[pt][0])
-            dist_dict[pairs[pt][0]] = dist_array[pairs[pt][0]]
+            dist_dict[pairs[pt][0]] = dist_array[pt] # dist_array[pairs[pt][0]]
 
     # Go over the cluster
     inter = set(cluster).intersection(neighbors)
@@ -496,6 +503,45 @@ def preprocess_data21(pairs, num_points):
         point_hash[pair[0]].append(k)
         point_hash[pair[1]].append(k)
 
+
+def dot_product_set(set1, set2):
+    """Define Jaccard Similarity function for two sets"""
+    intersection = len(set1.intersection(set2))
+    return float(intersection)
+
+def get_clustered_signatures():
+    with open('/Users/michaelko/Data/AB/num_classes_arr.pkl', 'rb') as load_f:
+        num_classes_arr = pickle.load(load_f)
+        one_or_more_classes = np.where(num_classes_arr > 0)[0]
+        return one_or_more_classes.tolist()
+
+def get_bad_signatures():
+    bad_bit = 9170
+    sky_signature = set([702, 2044, 3116, 3408, 3409, 3623, 3650, 5491, 6841, 6961, 7027, 7343, 8162, 9383, 9622])
+    tree_signature = set([50, 310, 822, 2684, 4080, 5426, 6960, 7027, 8349, 8951, 9517])
+    dashboard_roads = set([1627, 2675, 2684, 4036, 4353, 4385, 4783, 5581, 6053, 6205, 8349, 9018])
+    signatures_file = '/Users/michaelko/Code/dmon/data/random_signatures.pkl'
+    with open(small_signatures_file, 'rb') as file:
+        signatures = pickle.load(file)
+
+    bad_sigs = []
+    for k, sig in enumerate(signatures):
+        sky_res = dot_product_set(sky_signature, set(signatures[k][3]))
+        if sky_res > 12:
+            bad_sigs.append(k)
+        else:
+            tree_res = dot_product_set(tree_signature, set(signatures[k][3]))
+            if tree_res > 8:
+                bad_sigs.append(k)
+            else:
+                dash_res = dot_product_set(dashboard_roads, set(signatures[k][3]))
+                if dash_res > 9:
+                    bad_sigs.append(k)
+
+    return bad_sigs
+
+
+
 def segmentation():
     # With max 0.4 use the 0.2 dataset (pair_dist)
     # With min, better use smaller values and partial dataset
@@ -503,22 +549,61 @@ def segmentation():
 
     # pair_file = '/Users/michaelko/Code/dmon/data/pairs_partial_2.pkl'
     # dist_file = '/Users/michaelko/Code/dmon/data/distance_partial_2.pkl'
-    dist_file = '/Users/michaelko/Code/dmon/data/pairs_dist.pkl'
-    pair_file = '/Users/michaelko/Code/dmon/data/res_pairs.pkl'
+
+    # dist_file = '/Users/michaelko/Code/dmon/data/pairs_dist.pkl'
+    # pair_file = '/Users/michaelko/Code/dmon/data/res_pairs.pkl'
+
+    # These values obtained from removing all roads, skies, etc
+    dist_file = '/Users/michaelko/Code/dmon/data/pairs_dist23.pkl'
+    pair_file = '/Users/michaelko/Code/dmon/data/res_pairs23.pkl'
+
+    # For dor product distance -
+    # dist_file = '/Users/michaelko/Code/dmon/data/dot_prod_pair_dist_05_60_dist_file.pkl'
+    # pair_file = '/Users/michaelko/Code/dmon/data/dot_prod_pair_dist_05_60_pairs_file.pkl'
+
 
 
     file = open(dist_file, 'rb' )
+    # dist_array = pickle.load(file)[0]
     dist_array = pickle.load(file)
     file.close()
     file = open(pair_file, 'rb')
     pairs = pickle.load(file)
+    # pairs = pickle.load(file)[0]
     file.close()
 
-    threshold = 0.3
-    threshold_str = '03'
+    # dists = []
+    # for k, p in enumerate(pairs):
+    #     if p[0] == 347 or p[1] == 347:
+    #         dists.append(dist_array[k])
+    threshold = 0.4
+    threshold_str = '04'
     random.seed(10)
     num_points = 269796
     # num_points = 53959
+    num_points = 67449
+
+    # For dot
+    # threshold = 85
+    # threshold_str = '85'
+    # random.seed(10)
+    # # num_points = 269796
+    # num_points = 53959
+
+    # bad_sigs = get_bad_signatures()
+    # Get signatures with one or more clusters
+
+    if 0:
+        bad_sigs = get_clustered_signatures()
+        new_pairs = []
+
+        for pair in pairs:
+            if pair[0] in bad_sigs or pair[1] in bad_sigs:
+                continue
+            new_pairs.append(pair)
+        pairs = new_pairs
+
+    # Go over all pairs and remove the pairs where there is a bad signature
 
     point_hash = preprocess_data(pairs, num_points)
 
@@ -526,12 +611,13 @@ def segmentation():
     # threshold_str = '04'
     # all_clusters = create_clusters(pairs, point_hash, dist_array, 'max', threshold)
     # min - choose the longest distance. Works with smaller values
-    all_clusters = create_clusters(pairs, point_hash, dist_array, 'average', threshold)
+    # all_clusters = create_clusters(pairs, point_hash, dist_array, 'average', threshold)
+    all_clusters = create_clusters(pairs, point_hash, dist_array, 'max', threshold)
 
 
 
     # file = open('/Users/michaelko/Code/dmon/data/clusters_max_' + threshold_str + '.pkl', 'wb')
-    file = open('/Users/michaelko/Code/dmon/data/clusters_avg_' + threshold_str + '.pkl', 'wb')
+    file = open('/Users/michaelko/Code/dmon/data/clusters_jacard_max_23_' + threshold_str + '.pkl', 'wb')
     pickle.dump(all_clusters, file)
 
 
@@ -661,23 +747,16 @@ def get_clusters_and_signatures(signatures_file, clusters_file):
 
     return signatures, clusters
 
-def auto_clustering_pipeline():
-    # Input definition and input loading
-    signatures_file = '/Users/michaelko/Code/dmon/data/random_signatures.pkl'
-    clusters_files = ['/Users/michaelko/Code/dmon/data/clusters_max_04.pkl']
 
-    # Go over all possible clusters
-    for clusters_file in clusters_files:
-        signatures, clusters = get_clusters_and_signatures(signatures_file, clusters_file)
-
-    # C
-    # Step 1 - compute the prior probability of a bit to be on
-    all_bins = compute_bits_per_cluster(signatures, clusters, 0)
-    for cluster in range(1, 239):
-        all_bins = all_bins + compute_bits_per_cluster(signatures, clusters, cluster)
 
 
 if __name__ == "__main__":
+
+    bad_bit = 9170
+    sky_signature = [702, 2044, 3116, 3408, 3409, 3623, 3650, 5491, 6841, 6961, 7027, 7343, 8162, 9170, 9383, 9622]
+    tree_signature = [50,  310,  822, 2684, 4080, 5426, 6960, 7027, 8349, 8951, 9170, 9517]
+    dashboard_roads = [1627, 2675, 2684, 4036, 4353, 4385, 4783, 5581, 6053, 6205, 8349, 9018, 9170]
+
     print('Clustering')
     # hierarchical_test()
     segmentation()
